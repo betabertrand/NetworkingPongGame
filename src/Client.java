@@ -40,8 +40,8 @@ public class Client extends Application {
         switch (event.getCode()) {
           case UP: rect.setY(rect.getY() - KEYBOARD_MOVEMENT_DELTA); break;
           case DOWN:  rect.setY(rect.getY() + KEYBOARD_MOVEMENT_DELTA); break;
-          case U: rect1.setY(rect.getY() - KEYBOARD_MOVEMENT_DELTA); break;
-          case J:  rect1.setY(rect.getY() + KEYBOARD_MOVEMENT_DELTA); break;
+          case U: rect1.setY(rect1.getY() - KEYBOARD_MOVEMENT_DELTA); break;
+          case J:  rect1.setY(rect1.getY() + KEYBOARD_MOVEMENT_DELTA); break;
         }
       }
     });
