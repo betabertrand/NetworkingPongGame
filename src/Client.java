@@ -61,44 +61,62 @@ public class Client extends Application {
     sendMovesOnKeyPress(scene, Player1, Player2); // key event sends server moves
    
     stage.setScene(scene);
+	  
+	  new AnimationTimer()
+        {
+            public void handle(long currentNanoTime)
+            {
+            	
+            	String[] check = null;
+				try {
+					check = client.get();
+					Player1.setY(Double.parseDouble(check[0]));
+	        			Player2.setY(Double.parseDouble(check[1]));
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+            }
+        }.start(); 
+	  
     stage.show();
 
 	  // not really sure about this
 	  // purpose is to have a thread running in backround talking to server and updating gui
     // this is not working yet
     // trying to pull position info from server and update graphics
-		Service<Void> service = new Service<Void>() {
-			@Override
-			protected Task<Void> createTask() {
-				return new Task<Void>() {
-					@Override
-					protected Void call() throws Exception {
-						client.sendMessage("get:");
-						byte[] incomingData = new byte[1024];
-						DatagramPacket incomingPacket = new DatagramPacket(incomingData, incomingData.length);
-						socket.setSoTimeout(5000);
-						socket.receive(incomingPacket);
-						String response = new String(incomingPacket.getData());
-						String[] check = response.split(":");
-						final CountDownLatch latch = new CountDownLatch(1);
-						Platform.runLater(new Runnable() { // need to have to make changes to gui inside thread i think
-							@Override
-							public void run() {
-								try {
-									Player1.setY(Double.parseDouble(check[0]));
-									Player2.setY(Double.parseDouble(check[1]));
-								} finally {
-									latch.countDown();
-								}
-							}
-						});
-						latch.await();
-						return null;
-					}
-				};
-			}
-		};
-		service.start(); 
+//	Service<Void> service = new Service<Void>() {
+//			@Override
+//			protected Task<Void> createTask() {
+//				return new Task<Void>() {
+//					@Override
+//					protected Void call() throws Exception {
+//						client.sendMessage("get:");
+//						byte[] incomingData = new byte[1024];
+//						DatagramPacket incomingPacket = new DatagramPacket(incomingData, incomingData.length);
+//						socket.setSoTimeout(5000);
+//						socket.receive(incomingPacket);
+//						String response = new String(incomingPacket.getData());
+//						String[] check = response.split(":");
+//						final CountDownLatch latch = new CountDownLatch(1);
+//						Platform.runLater(new Runnable() { // need to have to make changes to gui inside thread i think
+//							@Override
+//							public void run() {
+//								try {
+//									Player1.setY(Double.parseDouble(check[0]));
+//									Player2.setY(Double.parseDouble(check[1]));
+//								} finally {
+//									latch.countDown();
+//								}
+//							}
+//						});
+//						latch.await();
+//						return null;
+//					}
+//				};
+//			}
+//		};
+//		service.start();	
 		
 	}
 
