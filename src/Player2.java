@@ -24,7 +24,7 @@ public class Player2 extends Application {
 	InetAddress IPAddress;
 	static Player2 client;
 	Rectangle Player1, Player2;
-	static double p1y, p2y;
+	static double p1y, p2y, ballx;
 	boolean on = true;
 
 	public Player2() {
@@ -54,7 +54,8 @@ public class Player2 extends Application {
 		Player2 = createRectangle(550, p2y);
 		
 		Circle ball = new Circle(6);
-		ball.setLayoutX(300);
+		ballx = 300;
+		ball.setLayoutX(ballx);
 		ball.setLayoutY(200);
 		ball.setFill(Color.WHITE);
 		
@@ -89,6 +90,7 @@ public class Player2 extends Application {
 						String[] check = client.get();
 						p1y = Double.parseDouble(check[0]);
 						p2y = Double.parseDouble(check[1]);
+						ballx = Double.parseDouble(check[2]);
 						}
 						return null;
 						
@@ -104,6 +106,7 @@ public class Player2 extends Application {
             {
 					Player1.setY(p1y);
 	        			Player2.setY(p2y);
+	        			ball.setLayoutX(ballx);
             }
         }.start(); 
 		stage.show();

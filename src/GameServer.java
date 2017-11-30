@@ -7,8 +7,7 @@ import java.net.SocketException;
 public class GameServer {
 
 	static int port = 1200; // needs to match port from Client!!!!!!!!!!
-	static double OneY;
-	static double TwoY;
+	static double OneY, TwoY, BallX;
 	static DatagramSocket socket = null; // initialize
 	static DatagramPacket replyPacket = null;
 
@@ -18,6 +17,7 @@ public class GameServer {
 	public static void main(String args[]) throws IOException, InterruptedException {
 		OneY = 200;
 		TwoY = 200;
+		BallX = 300;
 		GameServer server = new GameServer();
 		server.createAndListenSocket();
 	}
@@ -48,7 +48,7 @@ public class GameServer {
 		String[] check = message.split(":"); // splits string into method and value
 
 		if (check[0].equals("get")) {
-			String response = OneY + ":" + TwoY;
+			String response = OneY + ":" + TwoY + ":" + BallX;
 			byte[] data = response.getBytes();
 			replyPacket = new DatagramPacket(data, data.length, IPAddress, port);
 			socket.send(replyPacket);
@@ -63,10 +63,15 @@ public class GameServer {
 		} else if (check[0].equals("end")) {
 			socket.close();
 			System.exit(0);
-		}
-
+		} else if (check[0].equals("ball")) {
+			setBall(Double.parseDouble(check[1]));
+		} 
 	}
 
+	public static void setBall(double pos) {
+		BallX = pos;
+	}
+	
 	public static void p1minus() {
 		OneY = OneY + 10;
 	}
