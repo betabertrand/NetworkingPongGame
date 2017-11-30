@@ -1,3 +1,5 @@
+
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -10,23 +12,24 @@ import javafx.scene.*;
 import javafx.scene.input.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
 import javafx.animation.*;
 import javafx.concurrent.*;
+import javafx.scene.text.Text;
 
-public class Client extends Application {
+public class Player1 extends Application {
 
-	static String IP = "10.200.53.133"; // This should be your computers IP!!!!!!!!!!!
-	static int port = 1114; // Port should match servers!!!!!!!!!!!
-	private static final int PADDLE_MOVEMENT = 10;
+	static String IP = "10.200.60.48"; // This should be your computers IP!!!!!!!!!!!
+	static int port = 1200; // Port should match servers!!!!!!!!!!!
 	DatagramSocket socket;
 	InetAddress IPAddress;
-	static Client client;
+	static Player1 client;
 	Rectangle Player1, Player2;
-	static double p1y = 50, p2y = 50;
+	static double p1y, p2y;
 	boolean on = true;
 
-	public Client() {
+	public Player1() {
 		
 	}
 
@@ -47,18 +50,34 @@ public class Client extends Application {
 
 	@Override
 	public void start(Stage stage) throws Exception {
-		// final Circle Ball = new Circle();
-
-		Player1 = createRectangle(50, 200);
-		Player2 = createRectangle(550, 200);
-		final Group group = new Group(Player1, Player2);
+		p1y = 200;
+		p2y = 200;
+		Player1 = createRectangle(50, p1y);
+		Player2 = createRectangle(550, p2y);
+		
+		Circle ball = new Circle(6);
+		ball.setLayoutX(300);
+		ball.setLayoutY(200);
+		ball.setFill(Color.WHITE);
+		
+		Text title = new Text("Networking Pong (Player 1)");
+		title.setY(15);
+		title.setX(250);
+		title.setFill(Color.AQUA);
+		
+		Text t = new Text("Server: " + IP);
+		t.setY(390);
+		t.setX(250);
+		t.setFill(Color.ALICEBLUE);
+		
+		final Group group = new Group(Player1, Player2, t, ball, title);
 		final Scene scene = new Scene(group, 600, 400, Color.BLACK);
 
 		sendMovesOnKeyPress(scene, Player1, Player2); // key event sends server moves
 
 		stage.setScene(scene);
 		
-		client = new Client();
+		client = new Player1();
 		client.createAndListenSocket(IP);
 		
 		Service<Void> service = new Service<Void>() {
@@ -68,7 +87,6 @@ public class Client extends Application {
 					@Override
 					protected Void call() throws Exception {
 						while(on) {
-						Thread.sleep(5000);
 						String[] check = client.get();
 						p1y = Double.parseDouble(check[0]);
 						p2y = Double.parseDouble(check[1]);
@@ -93,7 +111,7 @@ public class Client extends Application {
 
 	}
 	
-	private String[] get() throws IOException {
+	String[] get() throws IOException {
 		// TODO Auto-generated method stub
 		socket.setSoTimeout(5000);
 		byte[] data = "get:".getBytes(); // convert to bytes
@@ -108,7 +126,7 @@ public class Client extends Application {
 		return check;
 	}
 
-	private Rectangle createRectangle(int x, int y) {
+	private Rectangle createRectangle(double x, double y) {
 		final Rectangle rect = new Rectangle(10, 30, Color.DARKMAGENTA);
 		rect.setX(x);
 		rect.setY(y);
@@ -134,28 +152,17 @@ public class Client extends Application {
 			public void handle(KeyEvent event) {
 				switch (event.getCode()) {
 				case UP:
-					client.sendMessage("p1plus");
+					if(!(p1y == 0)) client.sendMessage("p1plus:");
 					break;
-				// rect.setY(rect.getY() - KEYBOARD_MOVEMENT_DELTA); break;
 				case DOWN:
-					client.sendMessage("p1minus");
+					if(!(p1y == 370)) client.sendMessage("p1minus:");
 					break;
-				case ESCAPE: 
+				case ESCAPE:  
+					client.sendMessage("end:");
 					System.exit(0);
-					break;
-					// rect.setY(rect.getY() + KEYBOARD_MOVEMENT_DELTA); break;
-				case U:
-					rect1.setY(rect1.getY() - PADDLE_MOVEMENT);
-					break;
-				case J:
-					rect1.setY(rect1.getY() + PADDLE_MOVEMENT);
-					break;
-				default:
 					break;
 				}
 			}
 		});
 	}
 }
-
-
