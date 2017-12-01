@@ -9,27 +9,29 @@ import javafx.event.EventHandler;
 import javafx.scene.*;
 import javafx.scene.input.*;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.animation.*;
 import javafx.concurrent.*;
 
-public class Client2 extends Application {
+public class Player2 extends Application {
 
 	static String IP = "10.200.60.48"; // This should be your computers IP!!!!!!!!!!!
-	static int port = 1234; // Port should match servers!!!!!!!!!!!
+	static int port = 1200; // Port should match servers!!!!!!!!!!!
 	DatagramSocket socket;
 	InetAddress IPAddress;
-	static Client2 client;
+	static Player2 client;
 	Rectangle Player1, Player2;
-	static double p1y, p2y;
+	static double p1y, p2y, ballx;
 	boolean on = true;
 
-	public Client2() {
+	public Player2() {
 		
 	}
 
-	public void createAndListenSocket(String address) {
+	public void createAndListenSocket(String address) throws IOException {
 		try {
 			socket = new DatagramSocket(); // create new socket
 			IPAddress = InetAddress.getByName(address); // set IP address
@@ -50,14 +52,32 @@ public class Client2 extends Application {
 		p2y = 200;
 		Player1 = createRectangle(50, p1y);
 		Player2 = createRectangle(550, p2y);
-		final Group group = new Group(Player1, Player2);
+		
+		Circle ball = new Circle(6);
+		ballx = 300;
+		ball.setLayoutX(ballx);
+		ball.setLayoutY(200);
+		ball.setFill(Color.WHITE);
+		
+		Text title = new Text("Networking Pong");
+		title.setY(15);
+		title.setX(250);
+		title.setFill(Color.AQUA);
+		
+		Text t = new Text("Server: " + IP);
+		t.setY(390);
+		t.setX(250);
+		t.setFill(Color.ALICEBLUE);
+		
+	
+		final Group group = new Group(Player1, Player2, t, ball, title);
 		final Scene scene = new Scene(group, 600, 400, Color.BLACK);
 
 		sendMovesOnKeyPress(scene, Player1, Player2); // key event sends server moves
 
 		stage.setScene(scene);
 		
-		client = new Client2();
+		client = new Player2();
 		client.createAndListenSocket(IP);
 		
 		Service<Void> service = new Service<Void>() {
@@ -70,8 +90,10 @@ public class Client2 extends Application {
 						String[] check = client.get();
 						p1y = Double.parseDouble(check[0]);
 						p2y = Double.parseDouble(check[1]);
+						ballx = Double.parseDouble(check[2]);
 						}
 						return null;
+						
 					}
 				};
 			}
@@ -84,6 +106,7 @@ public class Client2 extends Application {
             {
 					Player1.setY(p1y);
 	        			Player2.setY(p2y);
+	        			ball.setLayoutX(ballx);
             }
         }.start(); 
 		stage.show();
@@ -129,10 +152,10 @@ public class Client2 extends Application {
 			public void handle(KeyEvent event) {
 				switch (event.getCode()) {
 				case UP:
-					client.sendMessage("p2plus:");
+					if( !(p2y == 0)) client.sendMessage("p2plus:");
 					break;
 				case DOWN:
-					client.sendMessage("p2minus:");
+					if(!(p2y == 370)) client.sendMessage("p2minus:");
 					break;
 				case ESCAPE: 
 					System.exit(0);

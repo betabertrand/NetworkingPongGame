@@ -1,4 +1,4 @@
-import java.io.IOException;
+imoort java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -10,22 +10,26 @@ import javafx.scene.*;
 import javafx.scene.input.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
 import javafx.animation.*;
 import javafx.concurrent.*;
+import javafx.scene.text.Text;
 
-public class Client extends Application {
+public class Player1 extends Application {
 
 	static String IP = "10.200.60.48"; // This should be your computers IP!!!!!!!!!!!
-	static int port = 1234; // Port should match servers!!!!!!!!!!!
+	static int port = 1200; // Port should match servers!!!!!!!!!!!
 	DatagramSocket socket;
 	InetAddress IPAddress;
-	static Client client;
+	static Player1 client;
 	Rectangle Player1, Player2;
-	static double p1y, p2y;
+	static double p1y, p2y, ballx;
+	static boolean left = true;
+	
 	boolean on = true;
 
-	public Client() {
+	public Player1() {
 		
 	}
 
@@ -46,19 +50,35 @@ public class Client extends Application {
 
 	@Override
 	public void start(Stage stage) throws Exception {
-		// final Circle Ball = new Circle();
 		p1y = 200;
 		p2y = 200;
 		Player1 = createRectangle(50, p1y);
 		Player2 = createRectangle(550, p2y);
-		final Group group = new Group(Player1, Player2);
+		
+		Circle ball = new Circle(6);
+		ballx= 300;
+		ball.setLayoutX(ballx);
+		ball.setLayoutY(200);
+		ball.setFill(Color.WHITE);
+		
+		Text title = new Text("Networking Pong (Player 1)");
+		title.setY(15);
+		title.setX(250);
+		title.setFill(Color.AQUA);
+		
+		Text t = new Text("Server: " + IP);
+		t.setY(390);
+		t.setX(250);
+		t.setFill(Color.ALICEBLUE);
+		
+		final Group group = new Group(Player1, Player2, t, ball, title);
 		final Scene scene = new Scene(group, 600, 400, Color.BLACK);
 
 		sendMovesOnKeyPress(scene, Player1, Player2); // key event sends server moves
 
 		stage.setScene(scene);
 		
-		client = new Client();
+		client = new Player1();
 		client.createAndListenSocket(IP);
 		
 		Service<Void> service = new Service<Void>() {
@@ -68,16 +88,58 @@ public class Client extends Application {
 					@Override
 					protected Void call() throws Exception {
 						while(on) {
+						detectCollison();
 						String[] check = client.get();
 						p1y = Double.parseDouble(check[0]);
 						p2y = Double.parseDouble(check[1]);
+						ballx = Double.parseDouble(check[2]);
 						}
 						return null;
+					}
+
+					private void detectCollison() {
+						if( ballx == 60 && ((p1y > 197 && p1y < 227) || (p1y > 173 && p1y < 203))) {
+							left = false;
+						} else if ( ballx == 550 && ((p2y > 197 && p2y < 227) || (p2y > 173 && p2y < 203))) {
+							left = true;
+						}
 					}
 				};
 			}
 		};
 		service.start();	
+		
+		Service<Void> ballService = new Service<Void>() {
+			@Override
+			protected Task<Void> createTask() {
+				return new Task<Void>() {
+					@Override
+					protected Void call() throws Exception {
+						while(on) {
+							Thread.sleep(1);
+							ballUpdate();
+						}
+						return null;
+					}
+
+					private void ballUpdate() throws InterruptedException {
+					if(left) {
+						ballx = ballx - 1;
+					} else {
+						ballx = ballx + 1;
+					}
+					client.sendMessage("ball:" + ballx);
+					}
+				};
+			}
+		};
+		
+		scene.setOnMousePressed(new EventHandler<MouseEvent>() {
+	        @Override
+	        public void handle(MouseEvent event) {
+	            ballService.start();
+	        }
+	    });
 		
 		new AnimationTimer()
         {
@@ -85,6 +147,7 @@ public class Client extends Application {
             {
 					Player1.setY(p1y);
 	        			Player2.setY(p2y);
+	        			ball.setLayoutX(ballx);
             }
         }.start(); 
 		
@@ -133,13 +196,12 @@ public class Client extends Application {
 			public void handle(KeyEvent event) {
 				switch (event.getCode()) {
 				case UP:
-					client.sendMessage("p1plus:");
+					if(!(p1y == 0)) client.sendMessage("p1plus:");
 					break;
-				// rect.setY(rect.getY() - KEYBOARD_MOVEMENT_DELTA); break;
 				case DOWN:
-					client.sendMessage("p1minus:");
+					if(!(p1y == 370)) client.sendMessage("p1minus:");
 					break;
-				case ESCAPE: 
+				case ESCAPE:  
 					client.sendMessage("end:");
 					System.exit(0);
 					break;

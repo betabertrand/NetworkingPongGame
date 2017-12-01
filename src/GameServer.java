@@ -6,31 +6,28 @@ import java.net.SocketException;
 
 public class GameServer {
 
-	static int port = 1234; // needs to match port from Client!!!!!!!!!!
-	static double OneY;
-	static double TwoY;
-	static double BallY;
-	static double BallX;
+	static int port = 1200; // needs to match port from Client!!!!!!!!!!
+	static double OneY, TwoY, BallX;
 	static DatagramSocket socket = null; // initialize
 	static DatagramPacket replyPacket = null;
 
 	public GameServer() {
 	}
 
-	public static void main(String args[]) throws IOException {
+	public static void main(String args[]) throws IOException, InterruptedException {
 		OneY = 200;
 		TwoY = 200;
+		BallX = 300;
 		GameServer server = new GameServer();
 		server.createAndListenSocket();
 	}
 
-	public void createAndListenSocket() {
+	public void createAndListenSocket() throws InterruptedException {
 		try {
 			socket = new DatagramSocket(port); // listen on port ____
 			byte[] incomingData = new byte[1024]; // initialize incoming data
 			DatagramPacket incomingPacket = new DatagramPacket(incomingData, incomingData.length); // get incoming
-																									// packet
-
+			
 			while (true) { // this loop is infinite for now
 				socket.receive(incomingPacket);
 				handlePacket(incomingPacket);
@@ -51,7 +48,7 @@ public class GameServer {
 		String[] check = message.split(":"); // splits string into method and value
 
 		if (check[0].equals("get")) {
-			String response = OneY + ":" + TwoY;
+			String response = OneY + ":" + TwoY + ":" + BallX;
 			byte[] data = response.getBytes();
 			replyPacket = new DatagramPacket(data, data.length, IPAddress, port);
 			socket.send(replyPacket);
@@ -66,26 +63,15 @@ public class GameServer {
 		} else if (check[0].equals("end")) {
 			socket.close();
 			System.exit(0);
-		}
-
+		} else if (check[0].equals("ball")) {
+			setBall(Double.parseDouble(check[1]));
+		} 
 	}
 
-	public static double GetBallX() {
-		return BallX;
+	public static void setBall(double pos) {
+		BallX = pos;
 	}
-
-	public static void SetBallX(double x) {
-		BallX = x;
-	}
-
-	public static double GetBallY() {
-		return BallY;
-	}
-
-	public static void SetBallY(double y) {
-		BallY = y;
-	}
-
+	
 	public static void p1minus() {
 		OneY = OneY + 10;
 	}
