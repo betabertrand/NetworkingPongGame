@@ -44,9 +44,9 @@ public class GameServer {
 		String message = new String(recieved.getData()); // get string from packet
 		InetAddress IPAddress = recieved.getAddress();
 		int port = recieved.getPort();
-		System.out.println("From Client:" + message);
 		String[] check = message.split(":"); // splits string into method and value
-
+		System.out.println("From Client:" + check[0]);
+		
 		if (check[0].equals("get")) {
 			String response = OneY + ":" + TwoY + ":" + BallX;
 			byte[] data = response.getBytes();
@@ -64,7 +64,14 @@ public class GameServer {
 			socket.close();
 			System.exit(0);
 		} else if (check[0].equals("ball")) {
-			setBall(Double.parseDouble(check[1]));
+			double ball = Double.parseDouble(check[1]);
+			if(ball > 608) {
+				BallX = 610;
+			} else if (ball < -8) {
+				BallX = -10;
+			} else {
+				setBall(ball);
+			}
 		} 
 	}
 

@@ -1,4 +1,4 @@
-imoort java.io.IOException;
+import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -14,11 +14,12 @@ import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
 import javafx.animation.*;
 import javafx.concurrent.*;
+import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 
 public class Player1 extends Application {
 
-	static String IP = "10.200.60.48"; // This should be your computers IP!!!!!!!!!!!
+	static String IP = "192.168.1.11"; // This should be your computers IP!!!!!!!!!!!
 	static int port = 1200; // Port should match servers!!!!!!!!!!!
 	DatagramSocket socket;
 	InetAddress IPAddress;
@@ -57,8 +58,8 @@ public class Player1 extends Application {
 		
 		Circle ball = new Circle(6);
 		ballx= 300;
-		ball.setLayoutX(ballx);
-		ball.setLayoutY(200);
+		ball.setCenterX(ballx);
+		ball.setCenterY(200);
 		ball.setFill(Color.WHITE);
 		
 		Text title = new Text("Networking Pong (Player 1)");
@@ -70,6 +71,12 @@ public class Player1 extends Application {
 		t.setY(390);
 		t.setX(250);
 		t.setFill(Color.ALICEBLUE);
+		
+		Text win = new Text();
+		win.setY(220);
+		win.setX(100);
+		win.setFill(Color.DARKORANGE);
+		win.setFont(Font.font(50));
 		
 		final Group group = new Group(Player1, Player2, t, ball, title);
 		final Scene scene = new Scene(group, 600, 400, Color.BLACK);
@@ -90,6 +97,7 @@ public class Player1 extends Application {
 						while(on) {
 						detectCollison();
 						String[] check = client.get();
+						System.out.println("From Server: " + "P1Y: " + check[0] + "P2Y: " + check[1] + "BallX:" + check[2] );
 						p1y = Double.parseDouble(check[0]);
 						p2y = Double.parseDouble(check[1]);
 						ballx = Double.parseDouble(check[2]);
@@ -116,7 +124,7 @@ public class Player1 extends Application {
 					@Override
 					protected Void call() throws Exception {
 						while(on) {
-							Thread.sleep(1);
+							Thread.sleep(5);
 							ballUpdate();
 						}
 						return null;
@@ -136,7 +144,7 @@ public class Player1 extends Application {
 		
 		scene.setOnMousePressed(new EventHandler<MouseEvent>() {
 	        @Override
-	        public void handle(MouseEvent event) {
+	        public void handle(MouseEvent event) { 
 	            ballService.start();
 	        }
 	    });
@@ -147,7 +155,15 @@ public class Player1 extends Application {
             {
 					Player1.setY(p1y);
 	        			Player2.setY(p2y);
-	        			ball.setLayoutX(ballx);
+	        			if(ballx == -10) {
+	        				win.setText("Player Two Wins");
+	        				group.getChildren().add(win);
+	        			} else if (ballx == 610) {
+	        				win.setText("Player One Wins");
+	        				group.getChildren().add(win);
+	        			} else {
+	        			ball.setCenterX(ballx);
+	        			}
             }
         }.start(); 
 		
@@ -165,7 +181,6 @@ public class Player1 extends Application {
 		DatagramPacket incomingPacket = new DatagramPacket(incomingData, incomingData.length);
 		socket.receive(incomingPacket);
 		String response = new String(incomingPacket.getData());
-		System.out.println("From Server:" + response);
 		String[] check = response.split(":");
 		return check;
 	}
