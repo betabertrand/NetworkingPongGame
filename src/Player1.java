@@ -19,8 +19,8 @@ import javafx.scene.text.Text;
 
 public class Player1 extends Application {
 
-	static String IP = "192.168.1.11"; // This should be your computers IP!!!!!!!!!!!
-	static int port = 1200; // Port should match servers!!!!!!!!!!!
+	static String IP = "10.200.192.62"; // This should be your computers IP!!!!!!!!!!!
+	static int port = 1201; // Port should match servers!!!!!!!!!!!
 	DatagramSocket socket;
 	InetAddress IPAddress;
 	static Player1 client;
